@@ -14,7 +14,7 @@ pip install -r requirements.txt
 ## 起動
 
 ```powershell
-# 事前に: az login --tenant 12576a9a-01ad-45f5-8f87-2c65c864d1e1
+# 事前に: az login --tenant yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 python proxy.py
 ```
 
@@ -84,7 +84,7 @@ API キーはモデル追加 UI でのみ受け付けられ Secret Storage に�
 | --- | --- |
 | `PROXY_HOST` | `127.0.0.1` |
 | `PROXY_PORT` | `8787` |
-| `FOUNDRY_BASE_URL` | `https://aif-ext-ketana-pe.cognitiveservices.azure.com` |
+| `FOUNDRY_BASE_URL` | `https://<your-foundry>.cognitiveservices.azure.com` |
 | `ENTRA_SCOPE` | `https://ai.azure.com/.default` |
 
 ## セキュリティ

@@ -23,8 +23,8 @@
 - [Install-Manual.md](Install-Manual.md) §5 / §6 に従い、Node.js と `@github/copilot` がインストール済み
 - [tools/copilot-cli-proxy/](../tools/copilot-cli-proxy/) のセットアップが完了済み
   - `python -m venv .venv` / `pip install -r requirements.txt` 実施済み
-- `az login --tenant 12576a9a-01ad-45f5-8f87-2c65c864d1e1` 済み
-- 対象 Foundry リソース (`aif-ext-ketana-pe`) に対し、現在のユーザーに **Cognitive Services OpenAI User** ロールが付与済み
+- `az login --tenant yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy` 済み
+- 対象 Foundry リソース (`<your-foundry>`) に対し、現在のユーザーに **Cognitive Services OpenAI User** ロールが付与済み
 - ユーザー環境変数として `COPILOT_*` が **永続化されていない**こと（残っていると優先されるため）
 
 永続化されていないことの確認:
@@ -57,7 +57,7 @@ foreach ($v in "COPILOT_OFFLINE","COPILOT_PROVIDER_TYPE","COPILOT_PROVIDER_BASE_
    └────────────────────────────────┘   HTTP     └──────────────┬──────────────┘
                                                                 │ HTTPS (PE)
                                                                 ▼
-                                                aif-ext-ketana-pe.cognitiveservices.azure.com
+                                                <your-foundry>.cognitiveservices.azure.com
 ```
 
 セッション A の `$env:XXX` 形式は **そのプロセス内のみ**で有効。新しいウィンドウを開くと失われる。
@@ -77,7 +77,7 @@ python proxy.py
 起動ログに次が出れば OK:
 
 ```
-INFO copilot-proxy Listening on http://127.0.0.1:8787 -> https://aif-ext-ketana-pe.cognitiveservices.azure.com
+INFO copilot-proxy Listening on http://127.0.0.1:8787 -> https://<your-foundry>.cognitiveservices.azure.com
 INFO copilot-proxy Token acquired, valid for NNNN seconds
 ```
 
@@ -181,7 +181,7 @@ $env:COPILOT_PROVIDER_BASE_URL
 セッション B のプロキシログに次が流れること:
 
 ```
-INFO copilot-proxy POST /openai/v1/chat/completions -> https://aif-ext-ketana-pe.cognitiveservices.azure.com/openai/v1/chat/completions
+INFO copilot-proxy POST /openai/v1/chat/completions -> https://<your-foundry>.cognitiveservices.azure.com/openai/v1/chat/completions
 ```
 
 ### 5.3 Copilot CLI の動作
@@ -212,8 +212,8 @@ copilot -p "今日の日付を ISO 8601 形式で表示する PowerShell ワン�
 ### 7.1 `copilot` 起動直後に 401 / 403
 
 - プロキシのトークン取得が失敗 → セッション B のログで `Initial token acquisition failed` を確認
-- Foundry の RBAC 未設定 → `aif-ext-ketana-pe` リソースに **Cognitive Services OpenAI User** ロールを付与
-- テナント違い → `az account show --query tenantId` が `12576a9a-01ad-45f5-8f87-2c65c864d1e1` か確認
+- Foundry の RBAC 未設定 → `<your-foundry>` リソースに **Cognitive Services OpenAI User** ロールを付与
+- テナント違い → `az account show --query tenantId` が `yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy` か確認
 
 ### 7.2 `Connection refused` / `ECONNREFUSED 127.0.0.1:8787`
 

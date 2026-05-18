@@ -23,7 +23,8 @@
 - [付録 B: 環境変数チートシート](#付録-b-環境変数チートシート)
 - [付録 C: Key Vault からの API キー取得（推奨）](#付録-c-key-vault-からの-api-キー取得推奨)
 - [付録 D: 参照リンク](#付録-d-参照リンク)
-- [付録 E: Entra ID Bearer 注入プロキシ（API キー無効化 Foundry 用）](#付録-e-entra-id-bearer-注入プロキシapi-キー無効化-foundry-用)
+
+> **API キー認証が利用できない環境（`disableLocalAuth=true` / Entra ID 専用）の場合**: 本マニュアルとは別に [Install-Manual-Proxy.md](./Install-Manual-Proxy.md) を参照してください。
 
 ---
 
@@ -55,13 +56,13 @@ GitHub Copilot CLI は次の 2 つの公式機能を組み合わせることで�
    └─────────────────────────────────│─────────────────────────────┘
                                      │
                               ┌──────▼─────────┐
-                              │ MyVNetGateway  │  (既存)
+                              │ <your-vpn-gw>  │  (既存)
                               └──────┬─────────┘
-   ┌──────────────────────────────── │ ────────────────────────────┐
-   │  Azure VNet (ketana-ext-private-ai RG)                       │
+   ┌──────────────────────────────── │ ────────────────────────────────┐
+   │  Azure VNet (<your-rg> RG)                                   │
    │                                 │                            │
-   │   ┌─────────────────────────────▼──────────────────────────┐ │
-   │   │  ketana-ext-vm-private (Windows 10/11)                 │ │
+   │   ┌────────────────────────────────────▼─────────────────────────┐ │
+   │   │  <your-vm> (Windows 10/11)                             │ │
    │   │  ─ Copilot CLI (オフラインモード + BYOK)               │ │
    │   │  ─ 環境変数: COPILOT_OFFLINE / COPILOT_PROVIDER_*      │ │
    │   └──────────────────┬─────────────────────────────────────┘ │
@@ -95,10 +96,10 @@ GitHub Copilot CLI は次の 2 つの公式機能を組み合わせることで�
 
 | 項目 | 値 |
 | --- | --- |
-| サブスクリプション ID | `571e49d7-d4d6-4cb5-884f-2e14bfaa662c` |
-| リソースグループ | `ketana-ext-private-ai` |
-| 検証用 VM | `ketana-ext-vm-private` (Windows 10 / 11) |
-| VPN ゲートウェイ | `MyVNetGateway` |
+| サブスクリプション ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| リソースグループ | `<your-rg>` |
+| 検証用 VM | `<your-vm>` (Windows 10 / 11) |
+| VPN ゲートウェイ | `<your-vpn-gw>` |
 
 ### 2.2 Azure AI Foundry 側で必要な準備
 
@@ -118,7 +119,7 @@ GitHub Copilot CLI は次の 2 つの公式機能を組み合わせることで�
 
 ### 2.4 クライアント側の準備物
 
-- VPN クライアント（既存 `MyVNetGateway` 用の構成）
+- VPN クライアント（既存 `<your-vpn-gw>` 用の構成）
 - Foundry の以下情報
   - リソース名 (例: `myfoundry`)
   - デプロイ名 (例: `gpt-4o-deploy`)
@@ -195,11 +196,11 @@ VM サブネットの NSG では次の方針とする。
 
 ### 4.1 VPN 接続
 
-クライアント PC から既存 `MyVNetGateway` (Point-to-Site / Site-to-Site) で接続する。
+クライアント PC から既存 `<your-vpn-gw>` (Point-to-Site / Site-to-Site) で接続する。
 
 ```powershell
 # Windows VPN クライアントから接続後、Azure VNet 内の名前解決が効くか確認
-Test-NetConnection -ComputerName ketana-ext-vm-private -Port 3389
+Test-NetConnection -ComputerName <your-vm> -Port 3389
 ```
 
 ### 4.2 RDP 接続
@@ -395,17 +396,17 @@ copilot --version
 
 ### 7.2 設定すべき環境変数（Azure OpenAI 互換 / 既定）
 
-本検証環境では Foundry リソース `aif-ext-ketana-pe` にデプロイした `gpt-5.4-mini` を使用する。エンドポイントは Azure AI Foundry の GA v1 ルート（`/openai/v1`）を採用し、モデル名はリクエストボディで渡される（从来の `/deployments/<NAME>` パスは不要）。Copilot CLI は v1.0.20 以降、`COPILOT_PROVIDER_API_VERSION` 未設定時はこの v1 ルートに自動適合する。
+本検証環境では Foundry リソース `<your-foundry>` にデプロイした `gpt-5.4-mini` を使用する。エンドポイントは Azure AI Foundry の GA v1 ルート（`/openai/v1`）を採用し、モデル名はリクエストボディで渡される（从来の `/deployments/<NAME>` パスは不要）。Copilot CLI は v1.0.20 以降、`COPILOT_PROVIDER_API_VERSION` 未設定時はこの v1 ルートに自動適合する。
 
 | 変数名 | 値の例 | 説明 |
 | --- | --- | --- |
 | `COPILOT_OFFLINE` | `true` | GitHub サーバーへの通信を抑止 |
 | `COPILOT_PROVIDER_TYPE` | `azure` | プロバイダー種別 |
-| `COPILOT_PROVIDER_BASE_URL` | `https://aif-ext-ketana-pe.cognitiveservices.azure.com/openai/v1` | Foundry リソースの v1 ルート |
+| `COPILOT_PROVIDER_BASE_URL` | `https://<your-foundry>.cognitiveservices.azure.com/openai/v1` | Foundry リソースの v1 ルート |
 | `COPILOT_PROVIDER_API_KEY` | `<Foundry の API キー>` | キー認証（下記注意参照） |
 | `COPILOT_MODEL` | `gpt-5.4-mini` | デプロイ名（モデル識別子） |
 
-> **重要：API キーが無効化されている場合**: `aif-ext-ketana-pe` で `disableLocalAuth=true`（または Entra ID 専用設定）の場合は `COPILOT_PROVIDER_API_KEY` にキーを設定しても 401 となる。Copilot CLI は BYOK で Entra ID 認証をネイティブサポートしないため、[付録 E](#付録-e-entra-id-bearer-注入プロキシapi-キー無効化-foundry-用) のローカル Bearer 注入プロキシを介させること。`COPILOT_PROVIDER_API_KEY` にはダミー値（例: `dummy-not-used`）を入れる。
+> **注意：API キー認証が無効化されている場合**: Foundry リソースで `disableLocalAuth=true`（または Entra ID 専用設定）になっている場合は、`COPILOT_PROVIDER_API_KEY` にキーを設定しても 401 となる。Copilot CLI は BYOK で Entra ID 認証をネイティブサポートしないため、別マニュアル [Install-Manual-Proxy.md](./Install-Manual-Proxy.md) のローカル Bearer 注入プロキシ方式を採用すること。
 
 ### 7.3 OpenAI 互換エンドポイントの場合（補足）
 
@@ -425,12 +426,12 @@ Foundry にデプロイしたモデルが OpenAI Chat Completions API 互換で�
 ```powershell
 [Environment]::SetEnvironmentVariable("COPILOT_OFFLINE","true","User")
 [Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_TYPE","azure","User")
-[Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_BASE_URL","https://aif-ext-ketana-pe.cognitiveservices.azure.com/openai/v1","User")
+[Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_BASE_URL","https://<your-foundry>.cognitiveservices.azure.com/openai/v1","User")
 [Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_API_KEY","<YOUR_AZURE_API_KEY>","User")
 [Environment]::SetEnvironmentVariable("COPILOT_MODEL","gpt-5.4-mini","User")
 ```
 
-> Entra ID 認証込みを介す場合は、`COPILOT_PROVIDER_BASE_URL` を `http://127.0.0.1:8787/openai/v1`、`COPILOT_PROVIDER_API_KEY` を `dummy-not-used` に差し替える（[付録 E](#付録-e-entra-id-bearer-注入プロキシapi-キー無効化-foundry-用) 参照）。
+> Entra ID 認証経路を採る場合は [Install-Manual-Proxy.md](./Install-Manual-Proxy.md) を参照。
 
 > `setx` コマンドでも同様の永続化が可能だが、値の長さ制限（1024 文字）に注意。上記 `[Environment]::SetEnvironmentVariable` 方式を推奨。
 
@@ -594,7 +595,7 @@ Test-NetConnection -ComputerName "<foundry-resource>.openai.azure.com" -Port 443
 ### 10.4 401 / 403 認証エラー
 
 - `COPILOT_PROVIDER_API_KEY` の値が誤っている → Foundry の Keys ブレードから再取得
-- Foundry リソース側で API キー認証が無効化されている（`disableLocalAuth=true` / Entra ID 専用）→ 現状の Copilot CLI BYOK は **API キー方式が前提**で Entra ID 認証は未サポート。回避策として [付録 E](#付録-e-entra-id-bearer-注入プロキシapi-キー無効化-foundry-用) のローカル Bearer 注入プロキシを使用する
+- Foundry リソース側で API キー認証が無効化されている（`disableLocalAuth=true` / Entra ID 専用）→ 現状の Copilot CLI BYOK は **API キー方式が前提**で Entra ID 認証は未サポート。回避策は [Install-Manual-Proxy.md](./Install-Manual-Proxy.md) のローカル Bearer 注入プロキシを使用する
 - デプロイ名が `COPILOT_PROVIDER_BASE_URL` の `/deployments/<NAME>` 部分と `COPILOT_MODEL` で一致しているか確認
 
 ### 10.5 SSL 証明書エラー
@@ -673,7 +674,7 @@ API キーを Key Vault に保管し、Copilot CLI 起動前に取得して環�
 
 ### C.1 前提
 
-- Key Vault `kv-ketana-ext-private` に `foundry-api-key` というシークレット名で保管
+- Key Vault `<your-keyvault>` に `foundry-api-key` というシークレット名で保管
 - VM のシステム割り当てマネージド ID（または UAI）に Key Vault の `Key Vault Secrets User` ロールを付与
 - Key Vault の Private Endpoint が VM の VNet に存在
 - VM に `Az.KeyVault` モジュールをインストール
@@ -692,7 +693,7 @@ Connect-AzAccount -Identity | Out-Null
 
 # Key Vault から API キーを取得
 $apiKey = (Get-AzKeyVaultSecret `
-    -VaultName "kv-ketana-ext-private" `
+    -VaultName "<your-keyvault>" `
     -Name "foundry-api-key" `
     -AsPlainText)
 
@@ -733,5 +734,5 @@ API キーは **プロセス内のみ**で保持され、ユーザー／シス�
 | 日付 | 内容 | 担当 |
 | --- | --- | --- |
 | 2026-05-17 | 初版作成 | – |
-| 2026-05-17 | 付録 E（Entra Bearer 注入プロキシ）を追加 | – |
 | 2026-05-17 | 5.4 VS Code（エディタ用途・拡張なし）を追加 | – |
+| 2026-05-17 | プロキシ方式を別マニュアル [Install-Manual-Proxy.md](./Install-Manual-Proxy.md) に分離 | – |
