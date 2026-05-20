@@ -47,7 +47,16 @@ $env:COPILOT_MODEL
 $env:COPILOT_PROVIDER_API_KEY.Length  # 値は出さず長さのみ
 ```
 
-未設定なら [Install-Manual.md §7.4](./Install-Manual.md#74-環境変数の永続設定powershell) を実施。
+未設定だった場合は以下で永続化（User スコープ）。詳細は [Install-Manual.md §7.4](./Install-Manual.md#74-環境変数の永続設定powershell) を参照。
+
+```powershell
+[Environment]::SetEnvironmentVariable("COPILOT_OFFLINE","true","User")
+[Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_TYPE","azure","User")
+[Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_BASE_URL","https://<your-foundry>.cognitiveservices.azure.com/openai/v1","User")
+[Environment]::SetEnvironmentVariable("COPILOT_PROVIDER_API_KEY","<your-api-key>","User")
+[Environment]::SetEnvironmentVariable("COPILOT_MODEL","<your-deployment-name>","User")
+# 反映には新しい PowerShell を開き直す
+```
 
 ### A.2 ネットワーク疎通確認
 

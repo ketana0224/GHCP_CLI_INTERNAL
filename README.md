@@ -34,6 +34,23 @@ GitHub Copilot CLI を、インターネット直結を最小化した Azure 閉
 
 ---
 
+## 閉域動作を成立させる中核設定
+
+本検証の閉域性は **「NW 側の閉域化」と「Copilot CLI 側のオフラインモード」の二段構え** で成立する。NW を閉じるだけでは CLI が `*.githubcopilot.com` を呼び続けるため、**`COPILOT_OFFLINE=true` が最重要スイッチ** となる。
+
+| 環境変数 | 値 | 役割 |
+|---|---|---|
+| **`COPILOT_OFFLINE`** | `true` | **GitHub クラウドへの通信を抑止**し、CLI を BYOM モードに切り替える公式トグル |
+| `COPILOT_PROVIDER_TYPE` | `azure` | 推論先プロバイダ種別（Foundry / Azure OpenAI 互換） |
+| `COPILOT_PROVIDER_BASE_URL` | `https://<your-foundry>.cognitiveservices.azure.com/openai/v1` または `http://127.0.0.1:8787/openai/v1`（プロキシ方式） | 推論リクエスト宛先 |
+| `COPILOT_PROVIDER_API_KEY` | API キー / `dummy-not-used`（プロキシ方式） | Foundry 認証（プロキシ方式ではプロキシ側が Bearer に差し替え） |
+| `COPILOT_MODEL` | `<your-deployment-name>` | Foundry 上のデプロイ名 |
+| `COPILOT_PROVIDER_WIRE_API` | `responses`（プロキシ方式で必要に応じて） | API 形式の指定 |
+
+設定の永続化は [docs/Install-Manual.md §7.4](docs/Install-Manual.md#74-環境変数の永続設定powershell)、実行時の確認は [Run-Manual.md §A.1](Run-Manual.md#a1-環境変数の確認vm-上) を参照。
+
+---
+
 ## 検証前提となる環境・Azure サービス
 
 ### Azure リソース
@@ -74,6 +91,7 @@ GitHub Copilot CLI を、インターネット直結を最小化した Azure 閉
 |---|---|
 | [docs/Install-Manual.md](docs/Install-Manual.md) | **標準パス**: API キー認証の Foundry を使った Copilot CLI 閉域導入マニュアル |
 | [docs/Install-Manual-Proxy.md](docs/Install-Manual-Proxy.md) | **差分パス**: `disableLocalAuth=true` の Entra ID 専用 Foundry に対し、ローカル Bearer 注入プロキシ経由で接続する手順 |
+| [Run-Manual.md](Run-Manual.md) | **実行手順書**: 導入済み環境で日々 Copilot CLI を起動・動作確認するための実行コマンド集 |
 | [docs/Run-Copilot-CLI-Ephemeral.md](docs/Run-Copilot-CLI-Ephemeral.md) | 環境変数を永続化せず、一時 PowerShell セッションで Copilot CLI を起動する手順 |
 | [Plan.md](Plan.md) | 検証計画書（スコープ・進捗・課題管理） |
 | [tools/copilot-cli-proxy/](tools/copilot-cli-proxy/) | Entra ID Bearer 注入プロキシ（`proxy.py`）のソース |
@@ -86,4 +104,4 @@ GitHub Copilot CLI を、インターネット直結を最小化した Azure 閉
 2. [docs/Install-Manual.md](docs/Install-Manual.md) を読み、Azure 側の前提リソース（VNet / PE / VM / Bastion / Foundry）を準備
 3. Foundry が API キー有効なら **そのまま** Install-Manual.md の §7 以降に従い Copilot CLI を起動
 4. Foundry が Entra ID 専用なら [docs/Install-Manual-Proxy.md](docs/Install-Manual-Proxy.md) の差分に従いローカルプロキシを構築
-5. 日常運用は [docs/Run-Copilot-CLI-Ephemeral.md](docs/Run-Copilot-CLI-Ephemeral.md) の一時起動スクリプトを利用
+5. 導入後の **日常的な起動・動作確認** は [Run-Manual.md](Run-Manual.md)、環境変数を永続化したくない場合は [docs/Run-Copilot-CLI-Ephemeral.md](docs/Run-Copilot-CLI-Ephemeral.md) の一時起動スクリプトを利用
