@@ -131,15 +131,7 @@ INFO copilot-proxy Token acquired, valid for 86xxx seconds
 
 新しい PowerShell を開く。
 
-#### B.2.1 永続化済み環境変数を使う場合
-
-```powershell
-copilot
-```
-
-環境変数が未設定なら [Install-Manual-Proxy.md §6](./Install-Manual-Proxy.md#6-copilot-cli-側の環境変数) で永続化するか、§B.2.2 の一時起動を使う。
-
-#### B.2.2 一時セッション起動（推奨・永続化しない）
+#### B.2.1 一時セッション起動（推奨・永続化しない）
 
 ```powershell
 pwsh -NoProfile -File "$env:USERPROFILE\start-copilot-ephemeral.ps1"
@@ -158,6 +150,14 @@ $env:COPILOT_MODEL             = "gpt-5.4-mini"
 $env:COPILOT_PROVIDER_WIRE_API = "responses"
 copilot
 ```
+
+#### B.2.2 永続化済み環境変数を使う場合
+
+```powershell
+copilot
+```
+
+環境変数が未設定なら [Install-Manual-Proxy.md §6](./Install-Manual-Proxy.md#6-copilot-cli-側の環境変数) で永続化するか、§B.2.1 の一時起動を使う。
 
 ### B.3 動作確認
 
